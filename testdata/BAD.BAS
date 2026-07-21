@@ -1,0 +1,12 @@
+REM エラー例
+USEVAR CLEAR
+FOR I#=0 TO 10
+  IF I=5 THEN
+NEXT
+GOTO NOTFOUND
+
+RE エラー
+' これはエラーになるはず
+IF A<>B THEN PRINT "A"
+A=SQRT#(B#)
+AX=B

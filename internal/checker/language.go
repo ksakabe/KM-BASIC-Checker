@@ -1,0 +1,45 @@
+package checker
+
+import "strings"
+
+// machikania-guide.pdf（2026-06-27版）に記載された命令・関数名。
+// 機種・バージョンによる利用可否は別の検査で扱う。
+var knownStatements = wordSet(
+	"ALIGN4 BGCOLOR BOXFILL BREAK CALL CDATA CIRCLE CIRCLEFILL CLEAR CLS COLOR CONTINUE " +
+		"CORETIMER CURSOR DATA DELAYMS DELAYUS DELETE DIM DO DRAWCOUNT ELSE ELSEIF END ENDIF EXEC " +
+		"FCLOSE FGET FIELD FILE FOR FOPEN FPRINT FPUT FPUTC FREMOVE FRENAME FSEEK GCLS GCOLOR GOSUB " +
+		"GOTO GPALETTE GPRINT I2C I2CREAD I2CREADDATA I2CWRITE I2CWRITEDATA IDLE IF INTERRUPT " +
+		"LABEL LINE LOOP METHOD MKDIR MUSIC NEW NEXT NTP OPTION OUT OUT16 OUT8H OUT8L PALETTE PCG PLAYWAVE " +
+		"POINT POKE POKE16 POKE32 PRINT PSET PUTBMP PWM READ REM RESTORE RETURN SCROLL SERIAL SERIALOUT " +
+		"SETDIR SETTIME SOUND SPI SPIREADDATA SPISWAPDATA SPIWRITE SPIWRITEDATA STATIC SYSTEM TIMER " +
+		"USECLASS USEGRAPHIC USEPCG USETIMER USEVAR VAR WAIT WEND WHILE WIDTH",
+)
+
+var knownFunctions = wordSet(
+	"ABS ACOS# ANALOG ARGS ARGS# ARGS$ ASC ATAN# ATAN2# CEIL# CHR$ CORETIMER COS# COSH# CREAD " +
+		"DATAADDRESS DEC$ DRAWCOUNT EXP# FABS# FEOF FFIND$ FGET FGETC FINFO FINFO$ FINPUT$ FLOAT# " +
+		"FLOAT$ FLEN FLOOR# FMOD# FOPEN FPUT FPUTC FREMOVE FRENAME FSEEK FUNCADDRESS GCOLOR GETDIR$ " +
+		"GETTIME$ GOSUB GOSUB# GOSUB$ HEX$ I2CERROR I2CREAD IN IN16 IN8H IN8L INKEY INPUT$ INT " +
+		"KEYS LEN LOG# LOG10# MKDIR MODF# MUSIC NEW NOT NOT# NTP PEEK PEEK16 PEEK32 PI# PLAYWAVE " +
+		"POW# READ READ$ READKEY RND SERIALIN SGN SIN# SINH# SPIREAD SPRINTF$ SQRT# STRCMP STRFTIME$ " +
+		"STRNCMP SYSTEM SYSTEM$ TAN# TANH# TIMER TVRAM VAL VAL#",
+)
+
+func wordSet(words string) map[string]struct{} {
+	m := make(map[string]struct{})
+	for _, word := range strings.Fields(words) {
+		m[word] = struct{}{}
+	}
+	return m
+}
+
+func languageReservedWords() map[string]struct{} {
+	reserved := make(map[string]struct{}, len(knownStatements)+len(knownFunctions))
+	for name := range knownStatements {
+		reserved[strings.TrimSuffix(strings.TrimSuffix(name, "$"), "#")] = struct{}{}
+	}
+	for name := range knownFunctions {
+		reserved[strings.TrimSuffix(strings.TrimSuffix(name, "$"), "#")] = struct{}{}
+	}
+	return reserved
+}

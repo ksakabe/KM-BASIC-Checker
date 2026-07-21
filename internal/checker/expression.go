@@ -68,7 +68,9 @@ type functionSignature struct {
 }
 
 var functionSignatures = map[string]functionSignature{
-	"INT": {typeInteger, []valueType{typeReal}, 1}, "FLOAT#": {typeReal, []valueType{typeInteger}, 1},
+	"RND":  {typeInteger, nil, 0},
+	"RND#": {typeReal, nil, 0},
+	"INT":  {typeInteger, []valueType{typeReal}, 1}, "FLOAT#": {typeReal, []valueType{typeInteger}, 1},
 	"VAL": {typeInteger, []valueType{typeString}, 1}, "VAL#": {typeReal, []valueType{typeString}, 1},
 	"ASC": {typeInteger, []valueType{typeString}, 1}, "CHR$": {typeString, []valueType{typeInteger}, 1},
 	"FLOAT$": {typeString, []valueType{typeReal}, 1}, "DEC$": {typeString, []valueType{typeInteger}, 1},

@@ -164,6 +164,19 @@ func TestFunctionArgumentTypes(t *testing.T) {
 	}
 }
 
+func TestRealRandomFunction(t *testing.T) {
+	src := "A=RND()\nB#=RND#()\nC#=RND#()*10\n"
+	result := checkTemp(t, src)
+	if result.ErrorCount() != 0 {
+		t.Fatalf("RND# caused errors: %#v", result.Diagnostics)
+	}
+}
+
+func TestRealRandomFunctionRejectsArguments(t *testing.T) {
+	result := checkTemp(t, "A#=RND#(1)\n")
+	assertDiagnostic(t, result, "KM5004")
+}
+
 func TestValidTypedExpressions(t *testing.T) {
 	src := "A=INT(1.5)+2\nB#=SIN#(FLOAT#(A))*PI#\nC$=DEC$(A)+\"!\"\nIF C$!=\"0\" THEN\nENDIF\n"
 	result := checkTemp(t, src)

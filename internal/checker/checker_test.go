@@ -328,6 +328,24 @@ func TestFGetStatementArguments(t *testing.T) {
 	}
 }
 
+func TestPutBMPAcceptsArrayOrLabel(t *testing.T) {
+	src := "USEVAR PIXELS\nDIM PIXELS(6)\nPUTBMP 0,0,5,5,PIXELS\nPUTBMP 0,0,5,5,BITMAP_DATA\nLABEL BITMAP_DATA\nCDATA 1,2,3\n"
+	result := checkTemp(t, src)
+	if result.ErrorCount() != 0 {
+		t.Fatalf("PUTBMP array or label caused errors: %#v", result.Diagnostics)
+	}
+}
+
+func TestPutBMPRejectsInvalidDataArgument(t *testing.T) {
+	result := checkTemp(t, "PUTBMP 0,0,5,5,A+1\n")
+	assertDiagnostic(t, result, "KM5103")
+}
+
+func TestPutBMPReportsUndefinedLabel(t *testing.T) {
+	result := checkTemp(t, "PUTBMP 0,0,5,5,MISSING_BITMAP\n")
+	assertDiagnostic(t, result, "KM2001")
+}
+
 func TestClassLibraryUsage(t *testing.T) {
 	lib := filepath.Join(t.TempDir(), "LIB", "DEMO")
 	if err := os.MkdirAll(lib, 0o700); err != nil {

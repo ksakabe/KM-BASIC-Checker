@@ -86,6 +86,10 @@ func (c *context) checkCommandArguments(line int, statement string) {
 		c.checkLabelCommandArguments(line, name, raw)
 		return
 	}
+	if name == "PUTBMP" {
+		c.checkPutBMPArguments(line, raw)
+		return
+	}
 	sig, ok := statementSignatures[name]
 	if !ok {
 		return // 制御構文、ラベル、クラス構文などは専用検査が担当する。
@@ -132,6 +136,37 @@ func (c *context) checkCommandArguments(line int, statement string) {
 			c.add(line, 1, Error, "KM5102", fmt.Sprintf("命令 %s の第%d引数は%sですが、%sが指定されています", name, i+1, expected, actual))
 		}
 	}
+}
+
+func (c *context) checkPutBMPArguments(line int, raw string) {
+	args := statementArguments(raw)
+	if len(args) != 5 {
+		c.add(line, 1, Error, "KM5101", fmt.Sprintf("命令 PUTBMP の引数は5個必要ですが、%d個指定されています", len(args)))
+		return
+	}
+	for i, rawArg := range args[:4] {
+		arg := strings.TrimSpace(rawArg)
+		if arg == "" {
+			continue
+		}
+		actual, err := parseExpression(arg)
+		if err != nil {
+			c.addExpressionError(line, err)
+		} else if actual != typeInteger {
+			c.add(line, 1, Error, "KM5102", fmt.Sprintf("命令 PUTBMP の第%d引数は整数型ですが、%sが指定されています", i+1, actual))
+		}
+	}
+	dataName := strings.TrimSpace(args[4])
+	if !labelNameRE.MatchString(dataName) {
+		c.add(line, 1, Error, "KM5103", "命令 PUTBMP の第5引数には配列名またはラベル名を指定してください")
+		return
+	}
+	key := strings.ToUpper(dataName)
+	if _, array := c.arrays[key]; array {
+		return
+	}
+	// 前方定義のラベルを許可し、全行の検査後に解決する。
+	c.refs = append(c.refs, labelRef{Name: dataName, Line: line, Col: 1, Kind: "PUTBMP"})
 }
 
 func (c *context) checkLabelCommandArguments(line int, name, raw string) {

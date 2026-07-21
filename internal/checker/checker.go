@@ -124,6 +124,11 @@ func (c *context) check(lines []sourceLine) {
 	// ラベル・行番号の参照解決。
 	for _, ref := range c.refs {
 		key := strings.ToUpper(ref.Name)
+		if ref.Kind == "PUTBMP" {
+			if _, ok := c.arrays[key]; ok {
+				continue
+			}
+		}
 		if _, ok := c.labels[key]; ok {
 			continue
 		}
@@ -361,10 +366,19 @@ func (c *context) checkLongVariableUsage(line int, statement string) {
 	first := firstWordRE.FindStringIndex(strings.TrimSpace(masked))
 	leading := len(masked) - len(strings.TrimLeftFunc(masked, unicode.IsSpace))
 	seen := make(map[string]struct{})
+	putBMPDataName := ""
+	if name, raw, ok := commandAndArguments(statement); ok && name == "PUTBMP" {
+		if args := statementArguments(raw); len(args) == 5 {
+			putBMPDataName = strings.ToUpper(strings.TrimSpace(args[4]))
+		}
+	}
 
 	for _, match := range identifierRE.FindAllStringIndex(masked, -1) {
 		name := strings.ToUpper(masked[match[0]:match[1]])
 		base := strings.TrimSuffix(strings.TrimSuffix(name, "$"), "#")
+		if name == putBMPDataName {
+			continue
+		}
 		if len(base) <= 1 {
 			continue
 		}

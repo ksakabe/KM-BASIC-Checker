@@ -325,6 +325,14 @@ func TestInlineIfStatementArguments(t *testing.T) {
 	}
 }
 
+func TestParenthesizedIfConditionIsNotAFunction(t *testing.T) {
+	src := "USEVAR DX,DY\nIF (DX!=0) OR (DY!=0) THEN\nENDIF\n"
+	result := checkTemp(t, src)
+	if result.ErrorCount() != 0 {
+		t.Fatalf("IF with a parenthesized condition was mistaken for a function: %#v", result.Diagnostics)
+	}
+}
+
 func TestLabelCommandArgumentCounts(t *testing.T) {
 	src := "GOTO\nRESTORE A,B\nSOUND\nGOSUB SUB,1,\"x\"\nEND\nLABEL SUB\nRETURN\n"
 	result := checkTemp(t, src)

@@ -691,6 +691,9 @@ func (c *context) checkKnownNames(line int, statement string) {
 
 	for _, m := range callRE.FindAllStringSubmatchIndex(masked, -1) {
 		name := strings.ToUpper(masked[m[2]:m[3]])
+		if _, statement := knownStatements[name]; statement {
+			continue
+		}
 		if _, operator := nonVariableWords[name]; operator {
 			continue
 		}
